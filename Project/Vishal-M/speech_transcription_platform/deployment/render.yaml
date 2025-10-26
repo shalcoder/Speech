@@ -1,0 +1,44 @@
+services:
+  - type: web
+    name: speech-transcription-api
+    env: docker
+    dockerfilePath: ./frontend/Vishal-M/speech_transcription_platform/backend/Dockerfile
+    dockerContext: ./frontend/Vishal-M/speech_transcription_platform/backend
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: speech-transcription-db
+          property: connectionString
+      - key: SPEECH_KEY
+        sync: false
+      - key: SERVICE_REGION
+        sync: false
+      - key: ENVIRONMENT
+        value: production
+      - key: DEBUG
+        value: "false"
+      - key: LOG_LEVEL
+        value: INFO
+      - key: CORS_ORIGINS
+        value: "https://speech-transcription-ui.onrender.com"
+      - key: SECRET_KEY
+        generateValue: true
+    healthCheckPath: /health
+
+  - type: web
+    name: speech-transcription-ui
+    env: docker
+    dockerfilePath: ./frontend/Vishal-M/speech_transcription_platform/frontend/Dockerfile
+    dockerContext: ./frontend/Vishal-M/speech_transcription_platform/frontend
+    envVars:
+      - key: NGINX_BACKEND_URL
+        fromService:
+          type: web
+          name: speech-transcription-api
+          property: url
+    healthCheckPath: /nginx_health
+
+databases:
+  - name: speech-transcription-db
+    databaseName: transcription_db
+    user: transcription_user
