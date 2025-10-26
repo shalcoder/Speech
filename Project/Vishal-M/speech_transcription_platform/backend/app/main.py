@@ -11,6 +11,8 @@ from slowapi.errors import RateLimitExceeded
 from contextlib import asynccontextmanager
 from datetime import datetime
 
+from sqlalchemy import text   # <-- ADD THIS IMPORT
+
 from .database import engine, Base
 from .config import get_settings
 from .logger import setup_logging, get_logger
@@ -106,7 +108,7 @@ async def health_check():
     try:
         # Simple query to check DB connection
         with engine.connect() as connection:
-            connection.execute("SELECT 1")
+            connection.execute(text("SELECT 1"))   # <-- UPDATED LINE
         db_status = "healthy"
     except Exception as e:
         logger.error("database_health_check_failed", error=str(e))
