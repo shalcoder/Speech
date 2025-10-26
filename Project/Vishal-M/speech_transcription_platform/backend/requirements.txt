@@ -1,6 +1,6 @@
 # Python Version
 # Requires Python 3.10
-python-version >= "3.10, <3.11"
+
 
 # Core Framework
 fastapi==0.109.0
