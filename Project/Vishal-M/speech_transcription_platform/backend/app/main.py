@@ -30,7 +30,7 @@ async def lifespan(app: FastAPI):
     try:
         logger.info("application_startup", version=settings.APP_VERSION)
         # Ensure database is initialized
-        Base.metadata.create_all(bind=engine)
+        Base.metadata.create_all(bind=engine, checkfirst=True)
         # Create temp upload directory
         os.makedirs(settings.TEMP_STORAGE_PATH, exist_ok=True)
         yield
