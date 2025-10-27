@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react'
 import { BarChart3, TrendingUp, Clock, FileText } from 'lucide-react'
 import axios from 'axios'
 
+const API_URL = import.meta.env.VITE_API_URL || 'https://speech-backend-prod.onrender.com';
+
 export default function Analytics() {
   const [stats, setStats] = useState({
     total: 0,
@@ -18,7 +20,7 @@ export default function Analytics() {
 
   const fetchAnalytics = async () => {
     try {
-      const response = await axios.get('/api/transcripts?limit=1000') // Fetch more to get better stats
+      const response = await axios.get(`${API_URL}/api/transcripts?limit=1000`) // Fetch more to get better stats
       const transcripts = response.data
 
       const analytics = {

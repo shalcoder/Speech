@@ -33,7 +33,7 @@ export default function LiveTranscription() {
       streamRef.current = stream
 
       // Updated: Use backend route and backend domain for socket!
-      wsRef.current = new WebSocket(`${WS_BASE_URL}/ws/transcribe`)
+      wsRef.current = new WebSocket(`${WS_BASE_URL}/ws/recognize-continuous`)
 
       wsRef.current.onopen = () => {
         setIsRecording(true)
