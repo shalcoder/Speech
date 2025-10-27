@@ -5,6 +5,9 @@ WORKDIR /app
 # Install system dependencies: build tools, postgres client, curl
 RUN apt-get update && apt-get install -y --no-install-recommends     build-essential     curl     ffmpeg     && apt-get clean     && rm -rf /var/lib/apt/lists/*
 
+RUN ffmpeg -version
+RUN echo $PATH
+
 # Copy only requirements first to leverage Docker cache
 COPY requirements.txt .
 # Install Python dependencies
