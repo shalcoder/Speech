@@ -114,6 +114,7 @@ async def upload_audio_file(
         )
 
         logger.info("upload_accepted", filename=file.filename, transcript_id=transcript.id)
+        logger.info(f"Transcript object: {transcript.__dict__}")
         return transcript
 
     except HTTPException:
