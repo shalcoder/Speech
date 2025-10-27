@@ -2,8 +2,9 @@ import { useState, useRef, useEffect } from 'react'
 import { Mic, Square, Loader } from 'lucide-react'
 import AudioVisualizer from '../components/AudioVisualizer'
 
-const API_URL = import.meta.env.VITE_API_URL || 'https://speech-backend-prod.onrender.com';
-const WS_URL = `${API_URL.replace(/^http/, 'ws')}/ws/transcribe`;
+// Get backend URL and set up correct WebSocket route
+const API_URL = import.meta.env.VITE_API_URL || 'https://speech-backend-prod.onrender.com'
+const WS_BASE_URL = API_URL.replace(/^http/, 'ws')
 
 export default function LiveTranscription() {
   const [isRecording, setIsRecording] = useState(false)
@@ -31,7 +32,8 @@ export default function LiveTranscription() {
       })
       streamRef.current = stream
 
-      wsRef.current = new WebSocket(WS_URL)
+      // Updated: Use backend route and backend domain for socket!
+      wsRef.current = new WebSocket(`${WS_BASE_URL}/ws/transcribe`)
 
       wsRef.current.onopen = () => {
         setIsRecording(true)
@@ -63,7 +65,7 @@ export default function LiveTranscription() {
       }
 
       const mediaRecorder = new MediaRecorder(stream, {
-        mimeType: 'audio/webm;codecs=opus' // Use a common, efficient codec
+        mimeType: 'audio/webm;codecs=opus'
       })
       mediaRecorderRef.current = mediaRecorder
 
@@ -73,8 +75,7 @@ export default function LiveTranscription() {
         }
       }
 
-      mediaRecorder.start(250) // Send data more frequently for lower latency
-
+      mediaRecorder.start(250)
     } catch (err) {
       setError(`Microphone access denied: ${err.message}`)
       setIsProcessing(false)
@@ -85,19 +86,15 @@ export default function LiveTranscription() {
     if (mediaRecorderRef.current?.state === 'recording') {
       mediaRecorderRef.current.stop()
     }
-
     streamRef.current?.getTracks().forEach(track => track.stop())
-
     if (wsRef.current?.readyState === WebSocket.OPEN) {
       wsRef.current.close()
     }
-
     setIsRecording(false)
     setIsProcessing(false)
   }
 
   useEffect(() => {
-    // Cleanup function runs on component unmount
     return () => {
       stopRecording()
     }
@@ -111,11 +108,9 @@ export default function LiveTranscription() {
           Real-time speech recognition with continuous streaming
         </p>
       </div>
-
       <div className="glass-panel p-8">
         <div className="flex flex-col items-center gap-6">
           <AudioVisualizer isActive={isRecording} stream={streamRef.current} />
-
           <div className="flex gap-4">
             {!isRecording ? (
               <button
@@ -145,7 +140,6 @@ export default function LiveTranscription() {
               </button>
             )}
           </div>
-
           {currentLanguage && (
             <div className="glass-panel px-4 py-2 border border-primary-500/30">
               <span className="text-sm text-gray-400">Detected Language:</span>
@@ -154,13 +148,11 @@ export default function LiveTranscription() {
           )}
         </div>
       </div>
-
       {error && (
         <div className="glass-panel border-red-500/50 bg-red-900/20 p-4">
           <p className="text-red-400">{error}</p>
         </div>
       )}
-
       <div className="glass-panel p-6">
         <h2 className="text-xl font-semibold text-white mb-4">Transcript</h2>
         <div className="space-y-3 max-h-96 overflow-y-auto">

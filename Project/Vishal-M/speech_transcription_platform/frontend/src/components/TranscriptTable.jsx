@@ -30,7 +30,7 @@ export default function TranscriptTable({ refreshTrigger }) {
     if (showLoading) setLoading(true)
     setError(null)
     try {
-      const response = await axios.get(`${API_URL}/transcriptions`, {
+      const response = await axios.get(`${API_URL}/api/transcripts`, {
         params: { limit: 100 } // Fetch last 100, adjust if needed
       })
       setTranscripts(response.data)
@@ -82,7 +82,7 @@ export default function TranscriptTable({ refreshTrigger }) {
     if (!confirm('Are you sure you want to delete this transcript permanently?')) return
 
     try {
-      await axios.delete(`${API_URL}/transcriptions/${id}`)
+      await axios.delete(`${API_URL}/api/transcripts/${id}`)
       setTranscripts(transcripts.filter(t => t.id !== id))
       setSelectedTranscript(null) // Close modal if open
     } catch (error) {
