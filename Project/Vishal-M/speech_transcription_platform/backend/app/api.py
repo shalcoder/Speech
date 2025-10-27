@@ -114,7 +114,7 @@ async def upload_audio_file(
         )
 
         ffmpeg_command = [
-            "C:\\ProgramData\\chocolatey\\bin\\ffmpeg.exe",
+            "ffmpeg",
             "-i", temp_file_path,
             "-f", "s16le",
             "-acodec", "pcm_s16le",
