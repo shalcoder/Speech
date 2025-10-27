@@ -2,7 +2,8 @@ import { useState, useRef, useEffect } from 'react'
 import { Mic, Square, Loader } from 'lucide-react'
 import AudioVisualizer from '../components/AudioVisualizer'
 
-const WS_BASE_URL = `${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}//${window.location.host}`
+const API_URL = import.meta.env.VITE_API_URL || 'https://speech-backend-prod.onrender.com';
+const WS_URL = `${API_URL.replace(/^http/, 'ws')}/ws/transcribe`;
 
 export default function LiveTranscription() {
   const [isRecording, setIsRecording] = useState(false)
@@ -30,7 +31,7 @@ export default function LiveTranscription() {
       })
       streamRef.current = stream
 
-      wsRef.current = new WebSocket(`${WS_BASE_URL}/ws/recognize-continuous`)
+      wsRef.current = new WebSocket(WS_URL)
 
       wsRef.current.onopen = () => {
         setIsRecording(true)

@@ -2,6 +2,8 @@ import { useState, useEffect, useCallback } from 'react'
 import { RefreshCw, Trash2, Eye, Filter, Loader, X } from 'lucide-react'
 import axios from 'axios'
 
+const API_URL = import.meta.env.VITE_API_URL || 'https://speech-backend-prod.onrender.com';
+
 // Debounce function
 function debounce(func, wait) {
   let timeout;
@@ -28,7 +30,7 @@ export default function TranscriptTable({ refreshTrigger }) {
     if (showLoading) setLoading(true)
     setError(null)
     try {
-      const response = await axios.get('/api/transcripts', {
+      const response = await axios.get(`${API_URL}/transcriptions`, {
         params: { limit: 100 } // Fetch last 100, adjust if needed
       })
       setTranscripts(response.data)
@@ -80,7 +82,7 @@ export default function TranscriptTable({ refreshTrigger }) {
     if (!confirm('Are you sure you want to delete this transcript permanently?')) return
 
     try {
-      await axios.delete(`/api/transcripts/${id}`)
+      await axios.delete(`${API_URL}/transcriptions/${id}`)
       setTranscripts(transcripts.filter(t => t.id !== id))
       setSelectedTranscript(null) // Close modal if open
     } catch (error) {
