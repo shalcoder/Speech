@@ -2,8 +2,8 @@ services:
   - type: web
     name: speech-transcription-api
     env: docker
-    dockerfilePath: ./frontend/Vishal-M/speech_transcription_platform/backend/Dockerfile
-    dockerContext: ./frontend/Vishal-M/speech_transcription_platform/backend
+    dockerfilePath: ./Project/Vishal-M/speech_transcription_platform/backend/Dockerfile
+    dockerContext: ./Project/Vishal-M/speech_transcription_platform/backend
     envVars:
       - key: DATABASE_URL
         fromDatabase:
@@ -28,8 +28,8 @@ services:
   - type: web
     name: speech-transcription-ui
     env: docker
-    dockerfilePath: ./frontend/Vishal-M/speech_transcription_platform/frontend/Dockerfile
-    dockerContext: ./frontend/Vishal-M/speech_transcription_platform/frontend
+    dockerfilePath: ./Project/Vishal-M/speech_transcription_platform/frontend/Dockerfile
+    dockerContext: ./Project/Vishal-M/speech_transcription_platform/frontend
     envVars:
       - key: NGINX_BACKEND_URL
         fromService:
