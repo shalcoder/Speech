@@ -1,6 +1,7 @@
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect, WebSocketException
 import azure.cognitiveservices.speech as speechsdk
 import asyncio
+import subprocess
 from typing import Optional
 
 from .transcription import transcription_service
@@ -54,7 +55,7 @@ async def websocket_continuous_recognition(websocket: WebSocket):
 
         # Start ffmpeg process to convert webm/opus to raw pcm
         ffmpeg_command = [
-            "ffmpeg",
+            "C:\\ProgramData\\chocolatey\\bin\\ffmpeg.exe",
             "-i", "pipe:0",        # Input from stdin
             "-f", "s16le",         # Output format: signed 16-bit little-endian PCM
             "-acodec", "pcm_s16le", # Audio codec
@@ -67,7 +68,8 @@ async def websocket_continuous_recognition(websocket: WebSocket):
             *ffmpeg_command,
             stdin=asyncio.subprocess.PIPE,
             stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.PIPE
+            stderr=asyncio.subprocess.PIPE,
+            creationflags=subprocess.CREATE_NO_WINDOW
         )
 
         async def read_ffmpeg_stdout():

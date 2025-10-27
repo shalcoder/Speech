@@ -7,6 +7,8 @@ import shutil
 import tempfile
 import csv
 import io
+import asyncio
+import subprocess
 from datetime import datetime
 
 from . import models, schemas
@@ -105,9 +107,45 @@ async def upload_audio_file(
         db.commit()
         db.refresh(transcript)
 
-        await process_transcription_task(
+        # Convert audio to raw PCM using ffmpeg
+        pcm_file_path = tempfile.mktemp(
+            dir=settings.TEMP_STORAGE_PATH,
+            suffix=".pcm"
+        )
+
+        ffmpeg_command = [
+            "C:\\ProgramData\\chocolatey\\bin\\ffmpeg.exe",
+            "-i", temp_file_path,
+            "-f", "s16le",
+            "-acodec", "pcm_s16le",
+            "-ar", "16000",
+            "-ac", "1",
+            pcm_file_path
+        ]
+
+        process = await asyncio.create_subprocess_exec(
+            *ffmpeg_command,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE
+        )
+
+        stdout, stderr = await process.communicate()
+
+        if process.returncode != 0:
+            logger.error("ffmpeg_conversion_failed", stderr=stderr.decode())
+            # Clean up the original temp file
+            if os.path.exists(temp_file_path):
+                os.remove(temp_file_path)
+            raise HTTPException(status_code=500, detail="Audio conversion failed")
+
+        # Clean up the original temp file
+        if os.path.exists(temp_file_path):
+            os.remove(temp_file_path)
+
+        background_tasks.add_task(
+            process_transcription_task,
             db,
-            temp_file_path,
+            pcm_file_path,
             transcript.id
         )
 
