@@ -77,7 +77,7 @@ export default function LiveTranscription() {
 
       mediaRecorder.start(250)
     } catch (err) {
-      setError(`Microphone access denied: ${err.message}`)
+      setError('Microphone access denied. Please ensure your microphone is connected and you have granted permission for this site to access it.')
       setIsProcessing(false)
     }
   }

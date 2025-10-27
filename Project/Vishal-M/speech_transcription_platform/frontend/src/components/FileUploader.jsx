@@ -73,7 +73,7 @@ export default function FileUploader({ onUploadComplete }) {
             : 'border-gray-700 hover:border-gray-600 hover:bg-gray-800/30'
         }`}
       >
-        <input {...getInputProps()} />
+        <input {...getInputProps()} id="audio-upload" name="audio-upload" />
         <Upload className="w-12 h-12 mx-auto mb-4 text-gray-400" />
         <p className="text-lg font-medium text-white mb-2">
           {isDragActive ? 'Drop audio file here' : 'Drag & drop single audio file'}
