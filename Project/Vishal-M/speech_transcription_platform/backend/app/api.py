@@ -62,9 +62,8 @@ async def process_transcription_task(
         if os.path.exists(file_path):
             os.remove(file_path)
 
-@router.post("/upload", response_model=schemas.TranscriptResponse, status_code=202)
+@router.post("/upload", response_model=schemas.TranscriptResponse, status_code=200)
 async def upload_audio_file(
-    background_tasks: BackgroundTasks,
     file: UploadFile = File(...),
     db: Session = Depends(get_db)
 ):
@@ -106,13 +105,13 @@ async def upload_audio_file(
         db.commit()
         db.refresh(transcript)
 
-        background_tasks.add_task(
-            process_transcription_task,
+        await process_transcription_task(
             db,
             temp_file_path,
             transcript.id
         )
 
+        db.refresh(transcript)
         logger.info("upload_accepted", filename=file.filename, transcript_id=transcript.id)
         logger.info(f"Transcript object: {transcript.__dict__}")
         return transcript
