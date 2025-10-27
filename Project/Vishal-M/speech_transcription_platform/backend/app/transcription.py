@@ -24,7 +24,6 @@ class TranscriptionService:
             subscription=self.speech_key,
             region=self.service_region
         )
-        config.speech_recognition_language = "en-US"
         return config
 
 
