@@ -18,11 +18,13 @@ export default function LiveTranscription() {
   const streamRef = useRef(null)
 
   const startRecording = async () => {
+    console.log("Attempting to start recording...");
     try {
       setError(null)
       setTranscript([])
       setIsProcessing(true)
 
+      console.log("Requesting microphone access...");
       const stream = await navigator.mediaDevices.getUserMedia({
         audio: {
           echoCancellation: true,
@@ -31,11 +33,15 @@ export default function LiveTranscription() {
         }
       })
       streamRef.current = stream
+      console.log("Microphone access granted.");
 
       // Updated: Use backend route and backend domain for socket!
-      wsRef.current = new WebSocket(`${WS_BASE_URL}/ws/recognize-continuous`)
+      const wsUrl = `${WS_BASE_URL}/ws/recognize-continuous`;
+      console.log(`Connecting to WebSocket at ${wsUrl}`);
+      wsRef.current = new WebSocket(wsUrl)
 
       wsRef.current.onopen = () => {
+        console.log("WebSocket connection opened.");
         setIsRecording(true)
         setIsProcessing(false)
       }
@@ -51,19 +57,23 @@ export default function LiveTranscription() {
           setCurrentLanguage(data.language)
         }
         if (data.status === 'error') {
+          console.error("Received error from backend:", data.error);
           setError(data.error)
         }
       }
 
-      wsRef.current.onerror = () => {
+      wsRef.current.onerror = (event) => {
+        console.error("WebSocket connection error:", event);
         setError('WebSocket connection error')
         stopRecording()
       }
 
       wsRef.current.onclose = () => {
+        console.log("WebSocket connection closed.");
         setIsRecording(false)
       }
 
+      console.log("Creating MediaRecorder...");
       const mediaRecorder = new MediaRecorder(stream, {
         mimeType: 'audio/webm;codecs=opus'
       })
@@ -76,8 +86,11 @@ export default function LiveTranscription() {
       }
 
       mediaRecorder.start(250)
+      console.log("MediaRecorder started.");
+
     } catch (err) {
-      setError('Microphone access denied. Please ensure your microphone is connected and you have granted permission for this site to access it.')
+      console.error("Error in startRecording:", err);
+      setError(`Microphone access denied: ${err.message}`)
       setIsProcessing(false)
     }
   }

@@ -3,6 +3,8 @@ import { useDropzone } from 'react-dropzone'
 import { Upload, File, X, CheckCircle, AlertCircle, Loader } from 'lucide-react'
 import axios from 'axios'
 
+const API_URL = import.meta.env.VITE_API_URL || 'https://speech-backend-prod.onrender.com';
+
 export default function FileUploader({ onUploadComplete }) {
   const [files, setFiles] = useState([])
   const [uploading, setUploading] = useState(false)
@@ -32,7 +34,7 @@ export default function FileUploader({ onUploadComplete }) {
     formData.append('file', files[0])
 
     try {
-      const response = await axios.post('/api/upload', formData, {
+      const response = await axios.post(`${API_URL}/api/upload`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       })
 
