@@ -25,6 +25,7 @@ class Settings(BaseSettings):
     RATE_LIMIT_PER_MINUTE: int = 60
 
     ENABLE_METRICS: bool = True
+    SUPPORTED_LANGUAGES: str = "en-US,hi-IN,es-ES,fr-FR,de-DE"
 
     class Config:
         env_file = ".env"
