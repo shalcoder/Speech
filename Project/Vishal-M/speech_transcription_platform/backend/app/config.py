@@ -19,7 +19,7 @@ class Settings(BaseSettings):
 
     MAX_UPLOAD_SIZE: int = 52428800
     ALLOWED_AUDIO_FORMATS: List[str] = [".wav", ".mp3", ".m4a", ".ogg", ".flac", ".webm"]
-    TEMP_STORAGE_PATH: str = "./temp_audio"
+    TEMP_STORAGE_PATH: str = "/tmp/temp_audio"
 
     LOG_LEVEL: str = "INFO"
     RATE_LIMIT_PER_MINUTE: int = 60
