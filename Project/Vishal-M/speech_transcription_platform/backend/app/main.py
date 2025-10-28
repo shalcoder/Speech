@@ -37,8 +37,7 @@ async def lifespan(app: FastAPI):
                 logger.warning(f"Dev environment detected. Deleting existing database file: {db_file}")
                 os.remove(db_file)
 
-        # Ensure database is initialized
-        Base.metadata.create_all(bind=engine, checkfirst=True)
+
         # Create temp upload directory
         os.makedirs(settings.TEMP_STORAGE_PATH, exist_ok=True)
         yield
