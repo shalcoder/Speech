@@ -66,6 +66,7 @@ async def process_transcription_task(
 
 @router.post("/upload", response_model=schemas.TranscriptResponse, status_code=200)
 async def upload_audio_file(
+    background_tasks: BackgroundTasks,
     file: UploadFile = File(...),
     db: Session = Depends(get_db)
 ):
