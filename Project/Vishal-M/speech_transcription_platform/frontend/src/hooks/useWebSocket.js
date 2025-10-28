@@ -1,59 +1,14 @@
-
 import { useEffect, useRef, useState, useCallback } from 'react'
 
-// Check if we are in production
-const isProduction = import.meta.env.PROD;
-const API_URL = import.meta.env.VITE_API_URL; // This will be set by Render
-
-if (isProduction && !API_URL) {
-  console.error("CRITICAL: VITE_API_URL environment variable is not set for production build!");
-}
-
-/**
- * Gets the correct WebSocket URL based on the environment.
- * @param {string} wsPath The path, e.g., "/ws/recognize-continuous"
- * @returns {string | null} The full WebSocket URL or null if config missing
- */
-function getWebSocketURL(wsPath) {
-  if (isProduction) {
-    // In production, use the VITE_API_URL
-    if (!API_URL) return null; // Cannot connect
-    // Replace http with ws, remove /api if present, remove trailing slash
-    const wsBase = API_URL.replace(/^http/, 'ws').replace(/\/api\/?$/, '').replace(/\/$/, '');
-    return `${wsBase}${wsPath}`;
-  } else {
-    // In development, use the current host and let Vite proxy handle it.
-    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const host = window.location.host; // e.g., localhost:5173
-    // Vite proxy will catch this and forward it to ws://localhost:8000
-    return `${protocol}//${host}${wsPath}`;
-  }
-}
-
-
-export function useWebSocket(urlPath, options = {}) {
+export function useWebSocket(url, options = {}) {
   const { onOpen, onMessage, onError, onClose } = options;
   const [isConnected, setIsConnected] = useState(false)
   const [lastMessage, setLastMessage] = useState(null)
   const wsRef = useRef(null)
-  
-  // Memoize the full URL calculation
-  const fullWebSocketURL = useCallback(() => getWebSocketURL(urlPath), [urlPath]);
-  
-  const connect = useCallback(() => {
-    const url = fullWebSocketURL();
-    if (!url) {
-      console.error("Cannot connect WebSocket: API URL is not defined.");
-      onError?.(new Error("WebSocket URL is not configured."));
-      return;
-    }
-    
-    if (wsRef.current && wsRef.current.readyState < 2) { // 0=CONNECTING, 1=OPEN
-        console.warn("WebSocket connection already exists or is connecting.");
-        return; 
-    }
 
-    console.log(`Attempting to connect WebSocket to: ${url}`);
+  const connect = useCallback(() => {
+    if (!url || wsRef.current) return // Don't connect if no URL or already connected/connecting
+
     const ws = new WebSocket(url)
     wsRef.current = ws
 
@@ -69,14 +24,15 @@ export function useWebSocket(urlPath, options = {}) {
         setLastMessage(data)
         onMessage?.(data)
       } catch (e) {
-        console.error("Failed to parse WebSocket message:", event.data, e);
-        onError?.(new Error("Received unparseable message from backend."));
+        console.error("Failed to parse WebSocket message:", e);
+        // Handle non-JSON messages or errors if necessary
       }
     }
 
     ws.onerror = (error) => {
       console.error(`WebSocket error on ${url}:`, error)
       onError?.(error)
+      // Consider adding automatic reconnection logic here if needed
     }
 
     ws.onclose = (event) => {
@@ -84,27 +40,27 @@ export function useWebSocket(urlPath, options = {}) {
       setIsConnected(false)
       wsRef.current = null // Clear ref on close
       onClose?.(event)
+      // Consider adding automatic reconnection logic here if needed
     }
-  }, [fullWebSocketURL, onOpen, onMessage, onError, onClose]);
+  }, [url, onOpen, onMessage, onError, onClose]);
 
 
   const disconnect = useCallback(() => {
      if (wsRef.current) {
-        console.log(`Closing WebSocket connection...`);
-        // Use standard close code 1000 unless specific reason needed
-        wsRef.current.close(1000, "Client initiated disconnect"); 
+        console.log(`Closing WebSocket connection to ${url}`);
+        wsRef.current.close();
         // State updates (isConnected=false, wsRef=null) happen in the onclose handler
      }
-  }, []);
+  }, [url]);
 
-  // Effect to disconnect on unmount
+  // Effect to connect on mount (if url is provided) and disconnect on unmount
   useEffect(() => {
-    // The component using the hook should call connect() explicitly.
-    // This effect only handles cleanup.
+    connect(); // Attempt connection when URL changes or component mounts
+
     return () => {
-      disconnect(); // Disconnect when component unmounts
+      disconnect(); // Disconnect when component unmounts or URL changes
     }
-  }, [disconnect]) // Depend on memoized disconnect
+  }, [connect, disconnect]) // Depend on memoized connect/disconnect
 
   const sendMessage = useCallback((data) => {
     if (wsRef.current?.readyState === WebSocket.OPEN) {
