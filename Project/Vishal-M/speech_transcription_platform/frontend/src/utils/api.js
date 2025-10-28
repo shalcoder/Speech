@@ -5,18 +5,14 @@ const isProduction = import.meta.env.PROD;
 
 // Get the backend URL from environment variables set during build,
 // or use the relative path '/api' which will be caught by the Vite proxy in development.
-export const BASE_URL = isProduction
+const BASE_URL = isProduction
   ? import.meta.env.VITE_API_URL // Use the URL provided during build
   : '/api'; // Vite proxy handles this in 'npm run dev'
 
 // Log an error if the production URL is missing during a production build
 if (isProduction && !BASE_URL) {
   console.error("CRITICAL: VITE_API_URL environment variable is not set during the production build!");
-  // You might want to throw an error here or provide a default fallback,
-  // but usually it's better to fail the build if the API URL is missing.
 }
-
-console.log(`API Base URL determined as: ${BASE_URL}`); // For debugging
 
 const api = axios.create({
   baseURL: BASE_URL,
