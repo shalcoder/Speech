@@ -13,7 +13,7 @@ from datetime import datetime
 
 from sqlalchemy import text   # <-- ADD THIS IMPORT
 
-from .database import engine, Base
+from .database import engine, Base, DATABASE_URL
 from .config import get_settings
 from .logger import setup_logging, get_logger
 from . import api, websocket, schemas
@@ -29,6 +29,13 @@ async def lifespan(app: FastAPI):
     """Application lifespan handler for startup/shutdown events"""
     try:
         logger.info("application_startup", version=settings.APP_VERSION)
+
+        # HACK: For dev environments, delete the DB file to avoid "table already exists" error
+        db_file = "./transcription.db"
+        if "sqlite" in DATABASE_URL and os.path.exists(db_file):
+            logger.warning(f"Dev environment detected. Deleting existing database file: {db_file}")
+            os.remove(db_file)
+
         # Ensure database is initialized
         Base.metadata.create_all(bind=engine, checkfirst=True)
         # Create temp upload directory
