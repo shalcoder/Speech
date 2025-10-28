@@ -5,7 +5,7 @@ const isProduction = import.meta.env.PROD;
 
 // Get the backend URL from environment variables set during build,
 // or use the relative path '/api' which will be caught by the Vite proxy in development.
-const BASE_URL = isProduction
+export const BASE_URL = isProduction
   ? import.meta.env.VITE_API_URL // Use the URL provided during build
   : '/api'; // Vite proxy handles this in 'npm run dev'
 
@@ -37,9 +37,9 @@ api.interceptors.response.use(
 
     // Reject the promise so component-level error handlers can catch it
     return Promise.reject({
-        message: message,
-        status: error.response?.status,
-        data: error.response?.data
+      message: message,
+      status: error.response?.status,
+      data: error.response?.data
     });
   }
 )
