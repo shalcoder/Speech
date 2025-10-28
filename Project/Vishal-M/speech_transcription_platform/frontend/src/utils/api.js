@@ -16,7 +16,7 @@ if (isProduction && !BASE_URL) {
 
 const api = axios.create({
   baseURL: BASE_URL,
-  timeout: 60000, // Increased timeout for potentially long operations like file upload
+  timeout: 300000, // Increased timeout for potentially long operations like file upload
   headers: {
     'Content-Type': 'application/json',
     'Accept': 'application/json',

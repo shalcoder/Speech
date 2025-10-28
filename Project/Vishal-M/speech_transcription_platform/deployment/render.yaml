@@ -1,7 +1,7 @@
 services:
   - type: web
     name: speech-transcription-api
-    env: docker
+    runtime: docker
     dockerfilePath: ./Project/Vishal-M/speech_transcription_platform/backend/Dockerfile
     dockerContext: ./Project/Vishal-M/speech_transcription_platform/backend
     envVars:
@@ -23,11 +23,15 @@ services:
         value: "https://speech-transcription-ui.onrender.com"
       - key: SECRET_KEY
         generateValue: true
+      - key: ALLOWED_HOSTS
+        value: '["speech-transcription-api.onrender.com"]'
+      - key: TEMP_STORAGE_PATH
+        value: /app/temp_audio
     healthCheckPath: /health
 
   - type: web
     name: speech-transcription-ui
-    env: docker
+    runtime: docker
     dockerfilePath: ./Project/Vishal-M/speech_transcription_platform/frontend/Dockerfile
     dockerContext: ./Project/Vishal-M/speech_transcription_platform/frontend
     envVars:

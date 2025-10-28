@@ -31,6 +31,9 @@ COPY . .
 # Create necessary directories if they don't exist in the image
 RUN mkdir -p temp_audio logs
 
+# Make start.sh executable
+RUN chmod +x start.sh
+
 # Set environment variables for Python
 ENV PYTHONUNBUFFERED=1
 ENV PYTHONDONTWRITEBYTECODE=1
@@ -42,4 +45,4 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
     CMD curl -f http://localhost:8000/health || exit 1
 
 # Command to run the application using Uvicorn with multiple workers
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "4"]
+CMD ["./start.sh"]
