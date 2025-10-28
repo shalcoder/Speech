@@ -15,7 +15,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# Verify ffmpeg installation (optional)
+# Verify ffmpeg installation (optional, but good)
 RUN ffmpeg -version
 
 # Copy only requirements first to leverage Docker cache
