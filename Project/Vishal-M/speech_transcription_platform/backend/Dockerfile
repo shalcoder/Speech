@@ -2,8 +2,21 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
-# Install system dependencies: build tools, postgres client, curl
-RUN apt-get update && apt-get install -y --no-install-recommends     build-essential     curl     ffmpeg     && apt-get clean     && rm -rf /var/lib/apt/lists/*
+# Install system dependencies:
+# - build-essential: For compiling Python packages
+# - libpq-dev: REQUIRED for installing psycopg2-binary (PostgreSQL driver)
+# - curl: Used for the HEALTHCHECK
+# - ffmpeg: Your custom requirement for audio processing
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    libpq-dev \
+    curl \
+    ffmpeg \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# Verify ffmpeg installation (optional)
+RUN ffmpeg -version
 
 # Copy only requirements first to leverage Docker cache
 COPY requirements.txt .
