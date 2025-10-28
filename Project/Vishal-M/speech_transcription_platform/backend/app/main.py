@@ -11,7 +11,7 @@ from slowapi.errors import RateLimitExceeded
 from contextlib import asynccontextmanager
 from datetime import datetime
 
-from sqlalchemy import text   # <-- ADD THIS IMPORT
+from sqlalchemy import text
 
 from .database import engine, Base, DATABASE_URL
 from .config import get_settings
@@ -30,11 +30,12 @@ async def lifespan(app: FastAPI):
     try:
         logger.info("application_startup", version=settings.APP_VERSION)
 
-        # HACK: For dev environments, delete the DB file to avoid "table already exists" error
-        db_file = "./transcription.db"
-        if "sqlite" in DATABASE_URL and os.path.exists(db_file):
-            logger.warning(f"Dev environment detected. Deleting existing database file: {db_file}")
-            os.remove(db_file)
+        # Only delete DB in development with SQLite
+        if settings.ENVIRONMENT == "development" and "sqlite" in DATABASE_URL:
+            db_file = "./transcription.db"
+            if os.path.exists(db_file):
+                logger.warning(f"Dev environment detected. Deleting existing database file: {db_file}")
+                os.remove(db_file)
 
         # Ensure database is initialized
         Base.metadata.create_all(bind=engine, checkfirst=True)
@@ -115,7 +116,7 @@ async def health_check():
     try:
         # Simple query to check DB connection
         with engine.connect() as connection:
-            connection.execute(text("SELECT 1"))   # <-- UPDATED LINE
+            connection.execute(text("SELECT 1"))
         db_status = "healthy"
     except Exception as e:
         logger.error("database_health_check_failed", error=str(e))
@@ -133,10 +134,6 @@ async def health_check():
         azure_speech=azure_status
     )
 
-# Placeholder for Prometheus metrics - requires prometheus-client setup
-# from prometheus_client import make_asgi_app
-# metrics_app = make_asgi_app()
-# app.mount("/metrics", metrics_app)
 @app.get("/metrics", tags=["monitoring"])
 @limiter.exempt
 async def metrics():

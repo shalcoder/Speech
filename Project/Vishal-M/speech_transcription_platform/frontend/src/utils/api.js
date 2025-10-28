@@ -6,17 +6,19 @@ const isProduction = import.meta.env.PROD;
 // Get the backend URL from environment variables set during build,
 // or use the relative path '/api' which will be caught by the Vite proxy in development.
 export const BASE_URL = isProduction
-  ? import.meta.env.VITE_API_URL // Use the URL provided during build
+  ? (import.meta.env.VITE_API_URL || '') // Use the URL provided during build
   : '/api'; // Vite proxy handles this in 'npm run dev'
 
 // Log an error if the production URL is missing during a production build
-if (isProduction && !BASE_URL) {
+if (isProduction && !import.meta.env.VITE_API_URL) {
   console.error("CRITICAL: VITE_API_URL environment variable is not set during the production build!");
 }
 
+console.log(`API Base URL: ${BASE_URL}`); // Debug log
+
 const api = axios.create({
   baseURL: BASE_URL,
-  timeout: 300000, // Increased timeout for potentially long operations like file upload
+  timeout: 60000, // Increased timeout for potentially long operations like file upload
   headers: {
     'Content-Type': 'application/json',
     'Accept': 'application/json',

@@ -1,48 +1,39 @@
-FROM python:3.11-slim
+# Stage 1: Build the React application
+FROM node:18-alpine AS builder
 
 WORKDIR /app
 
-# Install system dependencies:
-# - build-essential: For compiling Python packages
-# - libpq-dev: REQUIRED for installing psycopg2-binary (PostgreSQL driver)
-# - curl: Used for the HEALTHCHECK
-# - ffmpeg: Your custom requirement for audio processing
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    build-essential \
-    libpq-dev \
-    curl \
-    ffmpeg \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
+# Copy package.json and package-lock.json
+COPY package*.json ./
 
-# Verify ffmpeg installation (optional, but good)
-RUN ffmpeg -version
+# Install dependencies using npm ci for deterministic builds
+RUN npm ci
 
-# Copy only requirements first to leverage Docker cache
-COPY requirements.txt .
-
-# Install Python dependencies
-RUN pip install --no-cache-dir --upgrade pip && \
-    pip install --no-cache-dir -r requirements.txt
-
-# Copy the rest of the application code
+# Copy the rest of the application source code
 COPY . .
 
-# Create necessary directories if they don't exist in the image
-RUN mkdir -p temp_audio logs
+# Build the application for production
+# VITE_API_URL must be set as a build-time environment variable
+ARG VITE_API_URL
+ENV VITE_API_URL=$VITE_API_URL
 
-# Make start.sh executable
-RUN chmod +x start.sh
+RUN npm run build
 
-# Set environment variables for Python
-ENV PYTHONUNBUFFERED=1
-ENV PYTHONDONTWRITEBYTECODE=1
+# Stage 2: Serve the built application with Nginx
+FROM nginx:1.25-alpine
 
-EXPOSE 8000
+# Copy the built artifacts from the builder stage
+COPY --from=builder /app/dist /usr/share/nginx/html
 
-# Healthcheck to verify the API is responsive
-HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
-    CMD curl -f http://localhost:8000/health || exit 1
+# Copy the Nginx configuration (no template substitution needed)
+COPY nginx.conf.template /etc/nginx/nginx.conf
 
-# Command to run the application using Uvicorn with multiple workers
-CMD ["./start.sh"]
+# Expose port 80
+EXPOSE 80
+
+# Healthcheck for Nginx
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+    CMD wget --quiet --tries=1 --spider http://localhost/nginx_health || exit 1
+
+# Start Nginx in the foreground
+CMD ["nginx", "-g", "daemon off;"]
